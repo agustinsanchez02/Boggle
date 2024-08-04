@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boogle</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <h1>Boogle</h1>
+        <div id="playerInfo">
+            <input type="text" id="playerName" placeholder="Nombre del jugador">
+            <button id="startGame">Iniciar juego</button>
+        </div>
+        <div id="gameBoard"></div>
+        <div id="wordInfo">
+            <p>Palabra actual: <span id="currentWord"></span></p>
+            <button id="submitWord">Enviar palabra</button>
+        </div>
+        <div id="scoreInfo">
+            <p>Puntuación: <span id="score">0</span></p>
+        </div>
+        <div id="timer">Tiempo: <span id="time">03:00</span></div>
+        <div id="wordList">
+            <h3>Palabras encontradas:</h3>
+            <ul id="foundWords"></ul>
+        </div>
+    </div>
+    <script src="js/boogle.js"></script>
+</body>
+</html>
