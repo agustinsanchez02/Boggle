@@ -156,3 +156,42 @@ function resetGame() {
     var startButton = document.getElementById('startGame');
     startButton.disabled = false;
 }
+
+function isValidWord(word) {
+    // Verificar si tiene al menos 3 letras, despues se va a verificar mediante una API cuando descubra como hacerlo
+    return word.length >= 3;
+}
+
+function calculateScore(word) {
+    var length = word.length;
+    if (length <= 4) return 1;
+    if (length === 5) return 2;
+    if (length === 6) return 3;
+    if (length === 7) return 5;
+    return 11; // 8 letras o más
+}
+
+function submitWord() {
+    if (currentWord.length < 3) {
+        alert('La palabra debe tener al menos 3 letras.');
+        resetCurrentWord();
+        return;
+    }
+    
+    if (isValidWord(currentWord)) {
+        var wordScore = calculateScore(currentWord);
+        score += wordScore;
+        document.getElementById('score').textContent = score;
+        
+        var wordList = document.getElementById('foundWords');
+        var wordItem = document.createElement('li');
+        wordItem.textContent = currentWord + ' (' + wordScore + ' puntos)';
+        wordList.appendChild(wordItem);
+    } else {
+        alert('Palabra no válida. Pierdes 1 punto.');
+        score = Math.max(0, score - 1); // Evita puntuación negativa
+        document.getElementById('score').textContent = score;
+    }
+    
+    resetCurrentWord();
+}
