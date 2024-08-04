@@ -104,7 +104,55 @@ function startTimer() {
 
 function endGame() {
     alert('¡Tiempo terminado! Tu puntuación final es: ' + score);
-    // Aquí iría la lógica para guardar la puntuación y reiniciar el juego
 }
 
 window.addEventListener('load', initializeGame);
+
+function endGame() {
+    clearInterval(timer);
+    saveScore();
+    alert('¡Tiempo terminado! Tu puntuación final es: ' + score);
+    showHighScores();
+    resetGame();
+}
+
+function saveScore() {
+    var gameResult = {
+        playerName: playerName,
+        score: score,
+        date: new Date().toISOString()
+    };
+    
+    var highScores = JSON.parse(localStorage.getItem('boogleHighScores')) || [];
+    highScores.push(gameResult);
+    highScores.sort(function(a, b) { return b.score - a.score; });
+    highScores = highScores.slice(0, 10); // Mantener solo los 10 mejores puntajes
+    
+    localStorage.setItem('boogleHighScores', JSON.stringify(highScores));
+}
+
+function showHighScores() {
+    var highScores = JSON.parse(localStorage.getItem('boogleHighScores')) || [];
+    var scoreList = 'Mejores puntuaciones:\n\n';
+    
+    for (var i = 0; i < highScores.length; i++) {
+        scoreList += (i + 1) + '. ' + highScores[i].playerName + ': ' + highScores[i].score + ' puntos\n';
+    }
+    
+    alert(scoreList);
+}
+
+function resetGame() {
+    score = 0;
+    document.getElementById('score').textContent = score;
+    document.getElementById('foundWords').innerHTML = '';
+    document.getElementById('playerName').value = '';
+    document.getElementById('currentWord').textContent = '';
+    document.getElementById('time').textContent = '03:00';
+    
+    var gameBoard = document.getElementById('gameBoard');
+    gameBoard.innerHTML = '';
+    
+    var startButton = document.getElementById('startGame');
+    startButton.disabled = false;
+}
