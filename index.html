@@ -20,11 +20,15 @@
             <input type="text" id="playerName" placeholder="Nombre del jugador">
             <button id="startGame">Iniciar juego</button>
         </div>
+        <div id="gameInstructions">
+            <p>Nota: Para este juego, debes formar palabras en inglés, aunque la interfaz esté en español.</p>
+        </div>
         <div id="gameBoard" class="hidden"></div>
         <button id="reshuffleBoard" class="hidden">Reordenar letras</button>
         <div id="wordInfo" class="hidden">
             <p>Palabra actual: <span id="currentWord"></span></p>
             <button id="submitWord">Enviar palabra</button>
+            <button id="clearWord" class="hidden">Borrar Palabra</button>
         </div>
         <div id="scoreInfo" class="hidden">
             <p>Puntuación: <span id="score">0</span></p>

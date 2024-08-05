@@ -145,3 +145,12 @@ button:hover {
 .hidden {
     display: none;
 }
+
+#clearWord {
+    background-color: #f44336;
+    margin-left: 10px;
+}
+
+#clearWord:hover {
+    background-color: #d32f2f;
+}

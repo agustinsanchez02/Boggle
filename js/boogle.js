@@ -5,7 +5,7 @@ var currentWord = '';
 var score = 0;
 var timer;
 var playerName = '';
-var dictionary = {};
+
 
 function initializeGame() {
     var startButton = document.getElementById('startGame');
@@ -13,8 +13,36 @@ function initializeGame() {
     
     var reshuffleButton = document.getElementById('reshuffleBoard');
     reshuffleButton.addEventListener('click', reshuffleBoard);
+
+    var clearButton = document.getElementById('clearWord');
+    clearButton.addEventListener('click', clearCurrentWord);
     
-    loadDictionary();
+}
+
+function clearCurrentWord() {
+    resetCurrentWord();
+    updateCurrentWordDisplay();
+}
+
+function resetCurrentWord() {
+    currentWord = '';
+    var selectedLetters = document.getElementsByClassName('selected');
+    while (selectedLetters.length > 0) {
+        selectedLetters[0].classList.remove('selected');
+    }
+    updateCurrentWordDisplay();
+}
+
+function updateCurrentWordDisplay() {
+    document.getElementById('currentWord').textContent = currentWord;
+}
+
+function selectLetter() {
+    if (!this.classList.contains('selected')) {
+        this.classList.add('selected');
+        currentWord += this.textContent;
+        updateCurrentWordDisplay();
+    }
 }
 
 function startGame() {
@@ -27,24 +55,19 @@ function startGame() {
     // Ocultar la sección de entrada del nombre del jugador
     document.getElementById('playerInfo').classList.add('hidden');
     
-    // Mostrar los elementos del juego
-    var hiddenElements = document.querySelectorAll('.hidden');
-    hiddenElements.forEach(function(element) {
-        element.classList.remove('hidden');
-    });
+      // Mostrar los elementos del juego
+      var hiddenElements = document.querySelectorAll('.hidden');
+      hiddenElements.forEach(function(element) {
+          element.classList.remove('hidden');
+      });
+  
+      document.getElementById('clearWord').classList.remove('hidden');
     
     generateBoard();
     startTimer();
     enableBoardInteraction();
 }
 
-function loadDictionary() {
-    // Simulación de carga de un diccionario de palabras, despues se usara una api
-    var words = ['casa', 'perro', 'gato', 'árbol', 'flor', 'sol', 'luna', 'estrella', 'mar', 'montaña'];
-    words.forEach(function(word) {
-        dictionary[word.toUpperCase()] = true;
-    });
-}
 function generateBoard() {
     gameBoard = [];
     var boardElement = document.getElementById('gameBoard');
@@ -53,7 +76,7 @@ function generateBoard() {
     var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     for (var i = 0; i < 16; i++) {
         var letter = letters.charAt(Math.floor(Math.random() * letters.length));
-        gameBoard.push(letter); // Añade esta línea
+        gameBoard.push(letter);
         
         var letterElement = document.createElement('div');
         letterElement.className = 'letter';
@@ -70,7 +93,12 @@ function enableBoardInteraction() {
     }
     
     var submitButton = document.getElementById('submitWord');
-    submitButton.addEventListener('click', submitWord);
+    submitButton.addEventListener('click', async function() {
+        await submitWord();
+    });
+
+    var clearButton = document.getElementById('clearWord');
+    clearButton.addEventListener('click', clearCurrentWord);
 }
 
 function selectLetter() {
@@ -79,18 +107,29 @@ function selectLetter() {
     document.getElementById('currentWord').textContent = currentWord;
 }
 
-function submitWord() {
+async function submitWord() {
     if (currentWord.length < 3) {
         alert('La palabra debe tener al menos 3 letras.');
+        resetCurrentWord();
         return;
     }
     
-    // Aquí iría la lógica para validar la palabra y actualizar la puntuación
+    const isValid = await isValidWord(currentWord);
     
-    var wordList = document.getElementById('foundWords');
-    var wordItem = document.createElement('li');
-    wordItem.textContent = currentWord;
-    wordList.appendChild(wordItem);
+    if (isValid) {
+        var wordScore = calculateScore(currentWord);
+        score += wordScore;
+        document.getElementById('score').textContent = score;
+        
+        var wordList = document.getElementById('foundWords');
+        var wordItem = document.createElement('li');
+        wordItem.textContent = currentWord + ' (' + wordScore + ' puntos)';
+        wordList.appendChild(wordItem);
+    } else {
+        alert('Palabra inválida. Pierdes 1 punto.');
+        score = Math.max(0, score - 1);
+        document.getElementById('score').textContent = score;
+    }
     
     resetCurrentWord();
 }
@@ -175,38 +214,44 @@ function resetGame() {
     var gameBoard = document.getElementById('gameBoard');
     gameBoard.innerHTML = '';
     
+    // Ocultar los elementos del juego
+    var gameElements = document.querySelectorAll('#gameBoard, #reshuffleBoard, #wordInfo, #scoreInfo, #timer, #wordList');
+    gameElements.forEach(function(element) {
+        element.classList.add('hidden');
+    });
+    
+    // Mostrar la sección de entrada del nombre del jugador
+    document.getElementById('playerInfo').classList.remove('hidden');
+    
     var startButton = document.getElementById('startGame');
     startButton.disabled = false;
 }
 
-function isValidWord(word) {
-    // Convertir a mayúsculas para hacer la comparación insensible a mayúsculas/minúsculas
+async function isValidWord(word) {
     word = word.toUpperCase();
     
-    // Verificar longitud mínima
     if (word.length < 3) {
+        console.log('Palabra rechazada: menos de 3 letras');
         return false;
     }
     
-    // Verificar si la palabra existe en el diccionario
-    if (!dictionary[word]) {
-        return false;
-    }
-    
-    // Verificar si la palabra se puede formar con las letras adyacentes en el tablero
     if (!canFormWordOnBoard(word)) {
+        console.log('Palabra rechazada: no se puede formar en el tablero');
         return false;
     }
     
-    // Verificar si la palabra ya ha sido encontrada
     var foundWords = document.getElementById('foundWords').getElementsByTagName('li');
     for (var i = 0; i < foundWords.length; i++) {
         if (foundWords[i].textContent.toUpperCase().startsWith(word)) {
+            console.log('Palabra rechazada: ya ha sido encontrada');
             return false;
         }
     }
     
-    return true;
+    // Verificar la palabra en el diccionario en línea
+    const isInDictionary = await checkWordInDictionary(word);
+    console.log('¿La palabra está en el diccionario?', isInDictionary);
+    return isInDictionary;
 }
 
 function canFormWordOnBoard(word) {
@@ -271,31 +316,6 @@ function calculateScore(word) {
     return 11; // 8 letras o más
 }
 
-function submitWord() {
-    if (currentWord.length < 3) {
-        alert('La palabra debe tener al menos 3 letras.');
-        resetCurrentWord();
-        return;
-    }
-    
-    if (isValidWord(currentWord)) {
-        var wordScore = calculateScore(currentWord);
-        score += wordScore;
-        document.getElementById('score').textContent = score;
-        
-        var wordList = document.getElementById('foundWords');
-        var wordItem = document.createElement('li');
-        wordItem.textContent = currentWord + ' (' + wordScore + ' puntos)';
-        wordList.appendChild(wordItem);
-    } else {
-        alert('Palabra no válida. Pierdes 1 punto.');
-        score = Math.max(0, score - 1); // Evita puntuación negativa
-        document.getElementById('score').textContent = score;
-    }
-    
-    resetCurrentWord();
-}
-
 function reshuffleBoard() {
     var letters = gameBoard.slice();
     gameBoard = [];
@@ -315,4 +335,22 @@ function reshuffleBoard() {
     }
     
     enableBoardInteraction();
+}
+
+function checkWordInDictionary(word) {
+    return fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Palabra no encontrada');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos de la API para la palabra', word, ':', data);
+            return true; // Si llegamos aquí, la palabra existe
+        })
+        .catch(error => {
+            console.error('Error al verificar la palabra:', error);
+            return false;
+        });
 }
