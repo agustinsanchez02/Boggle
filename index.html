@@ -33,7 +33,15 @@
         <div id="scoreInfo" class="hidden">
             <p>Puntuación: <span id="score">0</span></p>
         </div>
-        <div id="timer" class="hidden">Tiempo: <span id="time">03:00</span></div>
+        <div id="timerSelector">
+            <label for="gameTime">Elige el tiempo de juego:</label>
+            <select id="gameTime">
+                <option value="120">2 minutos</option>
+                <option value="180" selected>3 minutos</option>
+                <option value="300">5 minutos</option>
+            </select>
+        </div>
+        <div id="timerDisplay" class="hidden">Tiempo restante: <span id="time">00:00</span></div>
         <div id="wordList" class="hidden">
             <h3>Palabras encontradas:</h3>
             <ul id="foundWords"></ul>

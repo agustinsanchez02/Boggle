@@ -34,6 +34,9 @@ function initializeGame() {
     var reshuffleButton = document.getElementById('reshuffleBoard');
     reshuffleButton.addEventListener('click', reshuffleBoard);
 
+    var submitButton = document.getElementById('submitWord');
+    submitButton.addEventListener('click', submitWord);
+
     var clearButton = document.getElementById('clearWord');
     clearButton.addEventListener('click', clearCurrentWord);
     
@@ -76,6 +79,10 @@ function startGame() {
     
     // Ocultar la sección de entrada del nombre del jugador
     document.getElementById('playerInfo').classList.add('hidden');
+
+   // Ocultar el selector de tiempo y mostrar el temporizador
+   document.getElementById('timerSelector').style.display = 'none';
+   document.getElementById('timerDisplay').style.display = 'block';
     
       // Mostrar los elementos del juego
       var hiddenElements = document.querySelectorAll('.hidden');
@@ -128,7 +135,7 @@ function generateBoard() {
         boardElement.appendChild(letterElement);
     }
     
-    console.log("Palabra válida en el tablero:", selectedWord);
+    console.log("Palabra válida en el nuevo tablero:", selectedWord);
 }
 
 function enableBoardInteraction() {
@@ -153,13 +160,14 @@ function selectLetter() {
 }
 
 async function submitWord() {
+    console.log("Palabra enviada:", currentWord);
     if (currentWord.length < 3) {
-        alert('La palabra debe tener al menos 3 letras.');
         resetCurrentWord();
         return;
     }
     
     const isValid = await isValidWord(currentWord);
+    console.log("¿Es válida la palabra?", isValid);
     
     if (isValid) {
         var wordScore = calculateScore(currentWord);
@@ -170,14 +178,17 @@ async function submitWord() {
         var wordItem = document.createElement('li');
         wordItem.textContent = currentWord + ' (' + wordScore + ' puntos)';
         wordList.appendChild(wordItem);
+        console.log("Palabra aceptada y puntuación actualizada");
     } else {
         alert('Palabra inválida. Pierdes 1 punto.');
         score = Math.max(0, score - 1);
         document.getElementById('score').textContent = score;
+        console.log("Palabra rechazada, puntuación reducida");
     }
     
     resetCurrentWord();
 }
+
 function resetCurrentWord() {
     currentWord = '';
     document.getElementById('currentWord').textContent = '';
@@ -188,19 +199,31 @@ function resetCurrentWord() {
 }
 
 function startTimer() {
-    var timeLeft = 180; // 3 minutos
+    var timeLeft = parseInt(document.getElementById('gameTime').value);
     var timerElement = document.getElementById('time');
     
-    timer = setInterval(function() {
-        var minutes = parseInt(timeLeft / 60, 10);
-        var seconds = parseInt(timeLeft % 60, 10);
+    // Limpiar el temporizador existente si lo hay
+    if (timer) {
+        clearInterval(timer);
+    }
+    
+    function updateTimerDisplay() {
+        var minutes = Math.floor(timeLeft / 60);
+        var seconds = timeLeft % 60;
         
         minutes = minutes < 10 ? "0" + minutes : minutes;
         seconds = seconds < 10 ? "0" + seconds : seconds;
         
         timerElement.textContent = minutes + ":" + seconds;
+    }
+    
+    updateTimerDisplay(); // Actualizar inmediatamente para mostrar el tiempo inicial
+    
+    timer = setInterval(function() {
+        timeLeft--;
+        updateTimerDisplay();
         
-        if (--timeLeft < 0) {
+        if (timeLeft <= 0) {
             clearInterval(timer);
             endGame();
         }
@@ -214,9 +237,14 @@ function endGame() {
 window.addEventListener('load', initializeGame);
 
 function endGame() {
-    clearInterval(timer);
+    var selectedTime = parseInt(document.getElementById('gameTime').value);
+    var timePlayed = selectedTime - parseInt(document.getElementById('time').textContent.split(':')[0]) * 60 - parseInt(document.getElementById('time').textContent.split(':')[1]);
+    var minutes = Math.floor(timePlayed / 60);
+    var seconds = timePlayed % 60;
+    
+    alert('¡Tiempo terminado! Tu puntuación final es: ' + score + '\nTiempo jugado: ' + minutes + ' minutos y ' + seconds + ' segundos');
+    
     saveScore();
-    alert('¡Tiempo terminado! Tu puntuación final es: ' + score);
     showHighScores();
     resetGame();
 }
@@ -253,33 +281,38 @@ function resetGame() {
     document.getElementById('foundWords').innerHTML = '';
     document.getElementById('playerName').value = '';
     document.getElementById('currentWord').textContent = '';
-    document.getElementById('time').textContent = '03:00';
+    
+    // Mostrar el selector de tiempo y ocultar el temporizador
+    document.getElementById('timerSelector').style.display = 'block';
+    document.getElementById('timerDisplay').style.display = 'none';
     
     var gameBoard = document.getElementById('gameBoard');
     gameBoard.innerHTML = '';
     
-    // Ocultar los elementos del juego
-    var gameElements = document.querySelectorAll('#gameBoard, #reshuffleBoard, #wordInfo, #scoreInfo, #timer, #wordList');
-    gameElements.forEach(function(element) {
-        element.classList.add('hidden');
-    });
-    
-    // Mostrar la sección de entrada del nombre del jugador
-    document.getElementById('playerInfo').classList.remove('hidden');
-    
     var startButton = document.getElementById('startGame');
     startButton.disabled = false;
+    
+    // Reiniciar el temporizador
+    if (timer) {
+        clearInterval(timer);
+    }
+    document.getElementById('time').textContent = '00:00';
 }
 
 async function isValidWord(word) {
     word = word.toUpperCase();
     
+    console.log("Verificando palabra:", word);
+    console.log("Tablero actual:", gameBoard);
+
     if (word.length < 3) {
         console.log('Palabra rechazada: menos de 3 letras');
         return false;
     }
     
-    if (!canFormWordOnBoard(word)) {
+    const canForm = canFormWordOnBoard(word);
+    console.log('¿Se puede formar la palabra en el tablero?', canForm);
+    if (!canForm) {
         console.log('Palabra rechazada: no se puede formar en el tablero');
         return false;
     }
@@ -361,35 +394,28 @@ function calculateScore(word) {
 }
 
 function reshuffleBoard() {
-    var letters = gameBoard.slice();
-    gameBoard = [];
-    var boardElement = document.getElementById('gameBoard');
-    boardElement.innerHTML = '';
+    // Generar un nuevo tablero
+    generateBoard();
     
-    while (letters.length > 0) {
-        var index = Math.floor(Math.random() * letters.length);
-        var letter = letters.splice(index, 1)[0];
-        gameBoard.push(letter);
-        
-        var letterElement = document.createElement('div');
-        letterElement.className = 'letter';
-        letterElement.textContent = letter;
-        letterElement.dataset.index = gameBoard.length - 1;
-        boardElement.appendChild(letterElement);
-    }
+    // Limpiar la palabra actual
+    resetCurrentWord();
     
+    // Volver a habilitar la interacción con el tablero
     enableBoardInteraction();
+    
+    console.log("Nuevo tablero generado y habilitado");
 }
 
 async function checkWordInDictionary(word) {
     word = word.toLowerCase();
     
     // Verificar si la palabra está en el caché
-    if (wordCache.hasOwnProperty(word)) {
-        console.log('Palabra encontrada en caché:', word);
+    if (word in wordCache) {
+        console.log('Palabra encontrada en caché:', word, wordCache[word]);
         return wordCache[word];
     }
 
+    console.log('Consultando API para la palabra:', word);
     try {
         const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
         const isValid = response.ok;
@@ -397,7 +423,7 @@ async function checkWordInDictionary(word) {
         // Almacenar el resultado en el caché
         wordCache[word] = isValid;
         
-        console.log('Palabra verificada en API:', word, 'Válida:', isValid);
+        console.log('Respuesta de la API para', word, ':', isValid ? 'Válida' : 'Inválida');
         return isValid;
     } catch (error) {
         console.error('Error al verificar la palabra:', error);

@@ -171,3 +171,22 @@ footer p::after {
     vertical-align: super;
     margin-left: 2px;
 }
+
+#timerSelector {
+    margin-bottom: 10px;
+}
+
+#gameTime {
+    padding: 5px;
+    font-size: 16px;
+}
+
+#timerDisplay {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+#time {
+    color: #4a90e2;
+}
