@@ -154,3 +154,10 @@ button:hover {
 #clearWord:hover {
     background-color: #d32f2f;
 }
+
+footer p::after {
+    content: '®';
+    font-size: 0.7em;
+    vertical-align: super;
+    margin-left: 2px;
+}
