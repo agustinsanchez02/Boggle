@@ -5,7 +5,18 @@ var currentWord = '';
 var score = 0;
 var timer;
 var playerName = '';
-
+const validFourLetterWords = [
+    "ABLE", "ACID", "ALSO", "AREA", "ARMY", "AWAY", "BABY", "BACK", "BALL", "BAND",
+    "BANK", "BASE", "BATH", "BEAR", "BEAT", "BEEN", "BELL", "BEST", "BILL", "BIRD",
+    "BLUE", "BOAT", "BODY", "BOOK", "BOTH", "CALL", "CAME", "CARD", "CARE", "CASE",
+    "CASH", "CITY", "CLUB", "COLD", "COME", "COST", "DARK", "DEAL", "DEEP", "DOES",
+    "DONE", "DOOR", "DOWN", "DRAW", "DROP", "EACH", "EAST", "EASY", "EDGE", "EVEN",
+    "EVER", "FACT", "FALL", "FARM", "FAST", "FEAR", "FEEL", "FILL", "FILM", "FIND",
+    "FINE", "FIRE", "FIRM", "FISH", "FIVE", "FLAT", "FOOD", "FOOT", "FORM", "FOUR",
+    "FREE", "FROM", "FULL", "FUND", "GAME", "GATE", "GIRL", "GIVE", "GOAL", "GOOD",
+    "GROW", "HAIR", "HALF", "HALL", "HAND", "HANG", "HARD", "HAVE", "HEAD", "HEAR",
+    "HEAT", "HELD", "HERE", "HIGH", "HILL", "HOME", "HOPE", "HOUR", "IDEA", "INTO"
+];
 
 function initializeGame() {
     var startButton = document.getElementById('startGame');
@@ -73,9 +84,30 @@ function generateBoard() {
     var boardElement = document.getElementById('gameBoard');
     boardElement.innerHTML = '';
     
+    // Seleccionar una palabra aleatoria de 4 letras
+    var selectedWord = validFourLetterWords[Math.floor(Math.random() * validFourLetterWords.length)];
+    
+    // Determinar una posición aleatoria para la palabra (horizontal o vertical)
+    var isHorizontal = Math.random() < 0.5;
+    var startRow = isHorizontal ? Math.floor(Math.random() * 4) : 0;
+    var startCol = isHorizontal ? 0 : Math.floor(Math.random() * 4);
+    
+    // Llenar el tablero con letras aleatorias
     var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     for (var i = 0; i < 16; i++) {
-        var letter = letters.charAt(Math.floor(Math.random() * letters.length));
+        var row = Math.floor(i / 4);
+        var col = i % 4;
+        var letter;
+        
+        // Colocar la palabra seleccionada
+        if (isHorizontal && row === startRow && col >= startCol && col < startCol + 4) {
+            letter = selectedWord[col - startCol];
+        } else if (!isHorizontal && col === startCol && row >= startRow && row < startRow + 4) {
+            letter = selectedWord[row - startRow];
+        } else {
+            letter = letters.charAt(Math.floor(Math.random() * letters.length));
+        }
+        
         gameBoard.push(letter);
         
         var letterElement = document.createElement('div');
@@ -84,6 +116,8 @@ function generateBoard() {
         letterElement.dataset.index = i;
         boardElement.appendChild(letterElement);
     }
+    
+    console.log("Palabra válida en el tablero:", selectedWord);
 }
 
 function enableBoardInteraction() {
@@ -247,6 +281,12 @@ async function isValidWord(word) {
             return false;
         }
     }
+    
+    // Verificar la palabra en el diccionario en línea
+    const isInDictionary = await checkWordInDictionary(word);
+    console.log('¿La palabra está en el diccionario?', isInDictionary);
+    return isInDictionary;
+}
     
     // Verificar la palabra en el diccionario en línea
     const isInDictionary = await checkWordInDictionary(word);
