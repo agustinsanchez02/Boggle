@@ -23,7 +23,6 @@ function preloadValidWords() {
     validFourLetterWords.forEach(word => {
         wordCache[word.toLowerCase()] = true;
     });
-    console.log('Palabras válidas precargadas en caché');
 }
 
 
@@ -135,7 +134,6 @@ function generateBoard() {
         boardElement.appendChild(letterElement);
     }
     
-    console.log("Palabra válida en el nuevo tablero:", selectedWord);
 }
 
 function enableBoardInteraction() {
@@ -160,14 +158,12 @@ function selectLetter() {
 }
 
 async function submitWord() {
-    console.log("Palabra enviada:", currentWord);
     if (currentWord.length < 3) {
         resetCurrentWord();
         return;
     }
     
     const isValid = await isValidWord(currentWord);
-    console.log("¿Es válida la palabra?", isValid);
     
     if (isValid) {
         var wordScore = calculateScore(currentWord);
@@ -178,12 +174,10 @@ async function submitWord() {
         var wordItem = document.createElement('li');
         wordItem.textContent = currentWord + ' (' + wordScore + ' puntos)';
         wordList.appendChild(wordItem);
-        console.log("Palabra aceptada y puntuación actualizada");
     } else {
         alert('Palabra inválida. Pierdes 1 punto.');
         score = Math.max(0, score - 1);
         document.getElementById('score').textContent = score;
-        console.log("Palabra rechazada, puntuación reducida");
     }
     
     resetCurrentWord();
@@ -302,32 +296,24 @@ function resetGame() {
 async function isValidWord(word) {
     word = word.toUpperCase();
     
-    console.log("Verificando palabra:", word);
-    console.log("Tablero actual:", gameBoard);
-
     if (word.length < 3) {
-        console.log('Palabra rechazada: menos de 3 letras');
         return false;
     }
     
     const canForm = canFormWordOnBoard(word);
-    console.log('¿Se puede formar la palabra en el tablero?', canForm);
     if (!canForm) {
-        console.log('Palabra rechazada: no se puede formar en el tablero');
         return false;
     }
     
     var foundWords = document.getElementById('foundWords').getElementsByTagName('li');
     for (var i = 0; i < foundWords.length; i++) {
         if (foundWords[i].textContent.toUpperCase().startsWith(word)) {
-            console.log('Palabra rechazada: ya ha sido encontrada');
             return false;
         }
     }
     
     // Verificar la palabra en el diccionario (usando caché si está disponible)
     const isInDictionary = await checkWordInDictionary(word);
-    console.log('¿La palabra está en el diccionario?', isInDictionary);
     return isInDictionary;
 }
 
@@ -403,7 +389,6 @@ function reshuffleBoard() {
     // Volver a habilitar la interacción con el tablero
     enableBoardInteraction();
     
-    console.log("Nuevo tablero generado y habilitado");
 }
 
 async function checkWordInDictionary(word) {
@@ -411,11 +396,9 @@ async function checkWordInDictionary(word) {
     
     // Verificar si la palabra está en el caché
     if (word in wordCache) {
-        console.log('Palabra encontrada en caché:', word, wordCache[word]);
         return wordCache[word];
     }
 
-    console.log('Consultando API para la palabra:', word);
     try {
         const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
         const isValid = response.ok;
@@ -423,7 +406,6 @@ async function checkWordInDictionary(word) {
         // Almacenar el resultado en el caché
         wordCache[word] = isValid;
         
-        console.log('Respuesta de la API para', word, ':', isValid ? 'Válida' : 'Inválida');
         return isValid;
     } catch (error) {
         console.error('Error al verificar la palabra:', error);
