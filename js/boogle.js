@@ -1,5 +1,6 @@
 'use strict';
 
+const wordCache = {};
 var gameBoard;
 var currentWord = '';
 var score = 0;
@@ -18,6 +19,14 @@ const validFourLetterWords = [
     "HEAT", "HELD", "HERE", "HIGH", "HILL", "HOME", "HOPE", "HOUR", "IDEA", "INTO"
 ];
 
+function preloadValidWords() {
+    validFourLetterWords.forEach(word => {
+        wordCache[word.toLowerCase()] = true;
+    });
+    console.log('Palabras válidas precargadas en caché');
+}
+
+
 function initializeGame() {
     var startButton = document.getElementById('startGame');
     startButton.addEventListener('click', startGame);
@@ -28,6 +37,8 @@ function initializeGame() {
     var clearButton = document.getElementById('clearWord');
     clearButton.addEventListener('click', clearCurrentWord);
     
+    preloadValidWords();
+
 }
 
 function clearCurrentWord() {
@@ -167,7 +178,6 @@ async function submitWord() {
     
     resetCurrentWord();
 }
-
 function resetCurrentWord() {
     currentWord = '';
     document.getElementById('currentWord').textContent = '';
@@ -282,13 +292,7 @@ async function isValidWord(word) {
         }
     }
     
-    // Verificar la palabra en el diccionario en línea
-    const isInDictionary = await checkWordInDictionary(word);
-    console.log('¿La palabra está en el diccionario?', isInDictionary);
-    return isInDictionary;
-}
-    
-    // Verificar la palabra en el diccionario en línea
+    // Verificar la palabra en el diccionario (usando caché si está disponible)
     const isInDictionary = await checkWordInDictionary(word);
     console.log('¿La palabra está en el diccionario?', isInDictionary);
     return isInDictionary;
@@ -377,20 +381,26 @@ function reshuffleBoard() {
     enableBoardInteraction();
 }
 
-function checkWordInDictionary(word) {
-    return fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Palabra no encontrada');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Datos de la API para la palabra', word, ':', data);
-            return true; // Si llegamos aquí, la palabra existe
-        })
-        .catch(error => {
-            console.error('Error al verificar la palabra:', error);
-            return false;
-        });
+async function checkWordInDictionary(word) {
+    word = word.toLowerCase();
+    
+    // Verificar si la palabra está en el caché
+    if (wordCache.hasOwnProperty(word)) {
+        console.log('Palabra encontrada en caché:', word);
+        return wordCache[word];
+    }
+
+    try {
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        const isValid = response.ok;
+        
+        // Almacenar el resultado en el caché
+        wordCache[word] = isValid;
+        
+        console.log('Palabra verificada en API:', word, 'Válida:', isValid);
+        return isValid;
+    } catch (error) {
+        console.error('Error al verificar la palabra:', error);
+        return false;
+    }
 }
