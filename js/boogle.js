@@ -10,9 +10,12 @@ var dictionary = {};
 function initializeGame() {
     var startButton = document.getElementById('startGame');
     startButton.addEventListener('click', startGame);
-    loadDictionary(); 
+    
+    var reshuffleButton = document.getElementById('reshuffleBoard');
+    reshuffleButton.addEventListener('click', reshuffleBoard);
+    
+    loadDictionary();
 }
-
 function startGame() {
     playerName = document.getElementById('playerName').value;
     if (playerName.length < 3) {
@@ -280,4 +283,25 @@ function submitWord() {
     }
     
     resetCurrentWord();
+}
+
+function reshuffleBoard() {
+    var letters = gameBoard.slice();
+    gameBoard = [];
+    var boardElement = document.getElementById('gameBoard');
+    boardElement.innerHTML = '';
+    
+    while (letters.length > 0) {
+        var index = Math.floor(Math.random() * letters.length);
+        var letter = letters.splice(index, 1)[0];
+        gameBoard.push(letter);
+        
+        var letterElement = document.createElement('div');
+        letterElement.className = 'letter';
+        letterElement.textContent = letter;
+        letterElement.dataset.index = gameBoard.length - 1;
+        boardElement.appendChild(letterElement);
+    }
+    
+    enableBoardInteraction();
 }
