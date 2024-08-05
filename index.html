@@ -20,17 +20,17 @@
             <input type="text" id="playerName" placeholder="Nombre del jugador">
             <button id="startGame">Iniciar juego</button>
         </div>
-        <div id="gameBoard"></div>
-        <button id="reshuffleBoard">Reordenar letras</button>
-        <div id="wordInfo">
+        <div id="gameBoard" class="hidden"></div>
+        <button id="reshuffleBoard" class="hidden">Reordenar letras</button>
+        <div id="wordInfo" class="hidden">
             <p>Palabra actual: <span id="currentWord"></span></p>
             <button id="submitWord">Enviar palabra</button>
         </div>
-        <div id="scoreInfo">
+        <div id="scoreInfo" class="hidden">
             <p>Puntuación: <span id="score">0</span></p>
         </div>
-        <div id="timer">Tiempo: <span id="time">03:00</span></div>
-        <div id="wordList">
+        <div id="timer" class="hidden">Tiempo: <span id="time">03:00</span></div>
+        <div id="wordList" class="hidden">
             <h3>Palabras encontradas:</h3>
             <ul id="foundWords"></ul>
         </div>

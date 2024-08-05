@@ -16,12 +16,23 @@ function initializeGame() {
     
     loadDictionary();
 }
+
 function startGame() {
     playerName = document.getElementById('playerName').value;
     if (playerName.length < 3) {
         alert('El nombre del jugador debe tener al menos 3 letras.');
         return;
     }
+    
+    // Ocultar la sección de entrada del nombre del jugador
+    document.getElementById('playerInfo').classList.add('hidden');
+    
+    // Mostrar los elementos del juego
+    var hiddenElements = document.querySelectorAll('.hidden');
+    hiddenElements.forEach(function(element) {
+        element.classList.remove('hidden');
+    });
+    
     generateBoard();
     startTimer();
     enableBoardInteraction();
