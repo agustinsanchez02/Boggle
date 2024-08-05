@@ -5,10 +5,12 @@ var currentWord = '';
 var score = 0;
 var timer;
 var playerName = '';
+var dictionary = {};
 
 function initializeGame() {
     var startButton = document.getElementById('startGame');
     startButton.addEventListener('click', startGame);
+    loadDictionary(); 
 }
 
 function startGame() {
@@ -17,12 +19,18 @@ function startGame() {
         alert('El nombre del jugador debe tener al menos 3 letras.');
         return;
     }
-    
     generateBoard();
     startTimer();
     enableBoardInteraction();
 }
 
+function loadDictionary() {
+    // Simulación de carga de un diccionario de palabras, despues se usara una api
+    var words = ['casa', 'perro', 'gato', 'árbol', 'flor', 'sol', 'luna', 'estrella', 'mar', 'montaña'];
+    words.forEach(function(word) {
+        dictionary[word.toUpperCase()] = true;
+    });
+}
 function generateBoard() {
     gameBoard = [];
     var boardElement = document.getElementById('gameBoard');
@@ -31,7 +39,7 @@ function generateBoard() {
     var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     for (var i = 0; i < 16; i++) {
         var letter = letters.charAt(Math.floor(Math.random() * letters.length));
-        gameBoard.push(letter);
+        gameBoard.push(letter); // Añade esta línea
         
         var letterElement = document.createElement('div');
         letterElement.className = 'letter';
@@ -158,10 +166,88 @@ function resetGame() {
 }
 
 function isValidWord(word) {
-    // Verificar si tiene al menos 3 letras, despues se va a verificar mediante una API cuando descubra como hacerlo
-    return word.length >= 3;
+    // Convertir a mayúsculas para hacer la comparación insensible a mayúsculas/minúsculas
+    word = word.toUpperCase();
+    
+    // Verificar longitud mínima
+    if (word.length < 3) {
+        return false;
+    }
+    
+    // Verificar si la palabra existe en el diccionario
+    if (!dictionary[word]) {
+        return false;
+    }
+    
+    // Verificar si la palabra se puede formar con las letras adyacentes en el tablero
+    if (!canFormWordOnBoard(word)) {
+        return false;
+    }
+    
+    // Verificar si la palabra ya ha sido encontrada
+    var foundWords = document.getElementById('foundWords').getElementsByTagName('li');
+    for (var i = 0; i < foundWords.length; i++) {
+        if (foundWords[i].textContent.toUpperCase().startsWith(word)) {
+            return false;
+        }
+    }
+    
+    return true;
 }
 
+function canFormWordOnBoard(word) {
+    for (var i = 0; i < gameBoard.length; i++) {
+        if (canFormWordFromCell(word, i, [])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function canFormWordFromCell(word, cellIndex, usedCells) {
+    if (word.length === 0) {
+        return true;
+    }
+    
+    if (cellIndex < 0 || cellIndex >= gameBoard.length || usedCells.indexOf(cellIndex) !== -1) {
+        return false;
+    }
+    
+    if (gameBoard[cellIndex] !== word[0]) {
+        return false;
+    }
+    
+    var newUsedCells = usedCells.concat([cellIndex]);
+    var remainingWord = word.slice(1);
+    
+    var adjacentCells = getAdjacentCells(cellIndex);
+    for (var i = 0; i < adjacentCells.length; i++) {
+        if (canFormWordFromCell(remainingWord, adjacentCells[i], newUsedCells)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function getAdjacentCells(cellIndex) {
+    var row = Math.floor(cellIndex / 4);
+    var col = cellIndex % 4;
+    var adjacent = [];
+    
+    for (var i = -1; i <= 1; i++) {
+        for (var j = -1; j <= 1; j++) {
+            if (i === 0 && j === 0) continue;
+            var newRow = row + i;
+            var newCol = col + j;
+            if (newRow >= 0 && newRow < 4 && newCol >= 0 && newCol < 4) {
+                adjacent.push(newRow * 4 + newCol);
+            }
+        }
+    }
+    
+    return adjacent;
+}
 function calculateScore(word) {
     var length = word.length;
     if (length <= 4) return 1;
