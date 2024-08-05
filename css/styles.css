@@ -155,6 +155,16 @@ button:hover {
     background-color: #d32f2f;
 }
 
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    font-size: 0.8em;
+}
+
 footer p::after {
     content: '®';
     font-size: 0.7em;
