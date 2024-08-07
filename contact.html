@@ -20,14 +20,18 @@
             <label for="name">Nombre:</label>
             <input type="text" id="name" name="name" required>
             <div id="nameError" class="error"></div>
+        
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" required>
             <div id="emailError" class="error"></div>
+        
             <label for="message">Mensaje:</label>
             <textarea id="message" name="message" required></textarea>
             <div id="messageError" class="error"></div>
+        
             <button type="submit" id="submitButton">Enviar</button>
         </form>
+        
         <div id="confirmationModal" class="modal">
             <div class="modal-content">
                 <h2>Confirmar envío</h2>
@@ -36,9 +40,9 @@
                 <button id="confirmSend">Enviar</button>
                 <button id="cancelSend">Cancelar</button>
             </div>
-        </div>  
+        </div>
+        
         <div id="successMessage" class="success-message"></div>
-    </div>
     <script src="js/contact.js"></script>
 </body>
 </html>

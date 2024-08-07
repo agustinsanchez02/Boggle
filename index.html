@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boogle</title>
-    <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -22,13 +21,13 @@
             <button id="startGame">Iniciar juego</button>
         </div>
 
-        <div id="gameBoard" class="hidden"></div>
-
-        <div id="message" class="hidden"></div>
+        <div id="message" class="hidden"></div>     
 
         <div id="gameInstructions">
             <p>Nota: Para este juego, debes formar palabras en inglés, aunque la interfaz esté en español.</p>
         </div>
+
+        <div id="gameBoard" class="hidden"></div>
 
         <button id="reshuffleBoard" class="hidden">Reordenar letras</button>
 
@@ -60,24 +59,8 @@
             <ul id="foundWords"></ul>
         </div>
 
-    </div>
-
-    <div id="scoreboardSidebar">
-        <h2>Top 10 Jugadores</h2>
-        <table id="leaderboard">
-            <thead>
-                <tr>
-                    <th>Posición</th>
-                    <th>Jugador</th>
-                    <th>Puntuación</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Las filas se llenarán dinámicamente con JavaScript -->
-            </tbody>
-        </table>
+        <div id="message" class="hidden"></div>
     </div>
     <script src="js/boogle.js"></script>
 </body>
-
 </html>

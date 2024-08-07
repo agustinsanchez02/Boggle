@@ -1,7 +1,6 @@
 'use strict';
 
 // Variables globales
-let leaderboard = [];
 let lastSelectedIndex = -1;
 let gameBoard = [];
 let currentWord = '';
@@ -43,8 +42,6 @@ function initializeGame() {
     submitWordButton.addEventListener('click', submitWord);
     clearWordButton.addEventListener('click', clearCurrentWord);
     reshuffleButton.addEventListener('click', reshuffleBoard);
-    loadLeaderboard();
-    updateLeaderboardDisplay();
 }
 
 // Inicio del juego
@@ -354,40 +351,6 @@ function startTimer() {
     }, 1000);
 }
 
-// Función para cargar el leaderboard desde localStorage
-function loadLeaderboard() {
-    const savedLeaderboard = localStorage.getItem('boogleLeaderboard');
-    if (savedLeaderboard) {
-        leaderboard = JSON.parse(savedLeaderboard);
-    }
-}
-
-// Función para guardar el leaderboard en localStorage
-function saveLeaderboard() {
-    localStorage.setItem('boogleLeaderboard', JSON.stringify(leaderboard));
-}
-
-// Función para actualizar el leaderboard
-function updateLeaderboard(playerName, score) {
-    leaderboard.push({ name: playerName, score: score });
-    leaderboard.sort((a, b) => b.score - a.score);
-    leaderboard = leaderboard.slice(0, 10); // Mantener solo los top 10
-    saveLeaderboard();
-    updateLeaderboardDisplay();
-}
-
-// Función para actualizar la visualización del leaderboard
-function updateLeaderboardDisplay() {
-    const leaderboardBody = document.querySelector('#leaderboard tbody');
-    leaderboardBody.innerHTML = '';
-    leaderboard.forEach((entry, index) => {
-        const row = leaderboardBody.insertRow();
-        row.insertCell(0).textContent = index + 1;
-        row.insertCell(1).textContent = entry.name;
-        row.insertCell(2).textContent = entry.score;
-    });
-}
-
 // Finalizar juego
 function endGame() {
     disableBoardInteraction();
@@ -398,8 +361,6 @@ function endGame() {
     hideElement(document.getElementById('scoreInfo'));
     hideElement(timerDisplay);
     hideElement(reshuffleButton);
-    updateLeaderboard(playerName, score);
-    showElement(document.getElementById('timerSelector'));
 }
 
 // Reordenar tablero
@@ -427,16 +388,4 @@ function disableBoardInteraction() {
 }
 
 // Inicializar el juego cuando se carga la página
-function adjustLayoutForScreenSize() {
-    const gameContainer = document.getElementById('gameContainer');
-    const scoreboardSidebar = document.getElementById('scoreboardSidebar');
-    
-    if (window.innerWidth < 768) {
-        document.body.appendChild(scoreboardSidebar);
-    } else {
-        document.body.insertBefore(scoreboardSidebar, gameContainer.nextSibling);
-    }
-}
-
-window.addEventListener('load', adjustLayoutForScreenSize);
-window.addEventListener('resize', adjustLayoutForScreenSize);
+window.addEventListener('load', initializeGame);
