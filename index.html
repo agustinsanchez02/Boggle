@@ -12,27 +12,34 @@
         <h1>Boogle</h1>
         <nav>
             <ul>
-                <li><a href="index.html">Juego</a></li>
+                <li><a href="index.html" class="active">Juego</a></li>
                 <li><a href="contact.html">Contacto</a></li>
             </ul>
         </nav>
+
         <div id="playerInfo">
             <input type="text" id="playerName" placeholder="Nombre del jugador">
             <button id="startGame">Iniciar juego</button>
         </div>
+
         <div id="gameInstructions">
             <p>Nota: Para este juego, debes formar palabras en inglés, aunque la interfaz esté en español.</p>
         </div>
+
         <div id="gameBoard" class="hidden"></div>
+
         <button id="reshuffleBoard" class="hidden">Reordenar letras</button>
+
         <div id="wordInfo" class="hidden">
             <p>Palabra actual: <span id="currentWord"></span></p>
             <button id="submitWord">Enviar palabra</button>
-            <button id="clearWord" class="hidden">Borrar Palabra</button>
+            <button id="clearWord">Borrar Palabra</button>
         </div>
+
         <div id="scoreInfo" class="hidden">
             <p>Puntuación: <span id="score">0</span></p>
         </div>
+
         <div id="timerSelector">
             <label for="gameTime">Elige el tiempo de juego:</label>
             <select id="gameTime">
@@ -41,15 +48,21 @@
                 <option value="300">5 minutos</option>
             </select>
         </div>
-        <div id="timerDisplay" class="hidden">Tiempo restante: <span id="time">00:00</span></div>
+
+        <div id="timerDisplay" class="hidden">
+            <p>Tiempo restante: <span id="time">00:00</span></p>
+        </div>
+
         <div id="wordList" class="hidden">
             <h3>Palabras encontradas:</h3>
             <ul id="foundWords"></ul>
         </div>
+
+        <div id="message" class="hidden"></div>
     </div>
     <script src="js/boogle.js"></script>
 </body>
 <footer>
-    <p>Boogle® - Creado por Agustin Sanchez Luccini &copy; 2023. Todos los derechos reservados.</p>
+    <p>Boogle® - Creado por Agustin Sanchez Luccini © 2023. Todos los derechos reservados.</p>
 </footer>
 </html>

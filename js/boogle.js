@@ -1,11 +1,12 @@
 'use strict';
 
+// Variables globales
+let gameBoard = [];
+let currentWord = '';
+let score = 0;
+let timer;
+let playerName = '';
 const wordCache = {};
-var gameBoard;
-var currentWord = '';
-var score = 0;
-var timer;
-var playerName = '';
 const validFourLetterWords = [
     "ABLE", "ACID", "ALSO", "AREA", "ARMY", "AWAY", "BABY", "BACK", "BALL", "BAND",
     "BANK", "BASE", "BATH", "BEAR", "BEAT", "BEEN", "BELL", "BEST", "BILL", "BIRD",
@@ -19,104 +20,69 @@ const validFourLetterWords = [
     "HEAT", "HELD", "HERE", "HIGH", "HILL", "HOME", "HOPE", "HOUR", "IDEA", "INTO"
 ];
 
-function preloadValidWords() {
-    validFourLetterWords.forEach(word => {
-        wordCache[word.toLowerCase()] = true;
-    });
-}
+// Elementos del DOM
+const playerNameInput = document.getElementById('playerName');
+const startGameButton = document.getElementById('startGame');
+const gameBoardElement = document.getElementById('gameBoard');
+const currentWordElement = document.getElementById('currentWord');
+const submitWordButton = document.getElementById('submitWord');
+const clearWordButton = document.getElementById('clearWord');
+const scoreElement = document.getElementById('score');
+const timerElement = document.getElementById('time');
+const foundWordsElement = document.getElementById('foundWords');
+const messageElement = document.getElementById('message');
+const reshuffleButton = document.getElementById('reshuffleBoard');
+const timerSelector = document.getElementById('gameTime');
+const timerDisplay = document.getElementById('timerDisplay');
 
-
+// Inicialización del juego
 function initializeGame() {
-    var startButton = document.getElementById('startGame');
-    startButton.addEventListener('click', startGame);
-    
-    var reshuffleButton = document.getElementById('reshuffleBoard');
+    startGameButton.addEventListener('click', startGame);
+    submitWordButton.addEventListener('click', submitWord);
+    clearWordButton.addEventListener('click', clearCurrentWord);
     reshuffleButton.addEventListener('click', reshuffleBoard);
-
-    var submitButton = document.getElementById('submitWord');
-    submitButton.addEventListener('click', submitWord);
-
-    var clearButton = document.getElementById('clearWord');
-    clearButton.addEventListener('click', clearCurrentWord);
-    
-    preloadValidWords();
-
 }
 
-function clearCurrentWord() {
-    resetCurrentWord();
-    updateCurrentWordDisplay();
-}
-
-function resetCurrentWord() {
-    currentWord = '';
-    var selectedLetters = document.getElementsByClassName('selected');
-    while (selectedLetters.length > 0) {
-        selectedLetters[0].classList.remove('selected');
-    }
-    updateCurrentWordDisplay();
-}
-
-function updateCurrentWordDisplay() {
-    document.getElementById('currentWord').textContent = currentWord;
-}
-
-function selectLetter() {
-    if (!this.classList.contains('selected')) {
-        this.classList.add('selected');
-        currentWord += this.textContent;
-        updateCurrentWordDisplay();
-    }
-}
-
+// Inicio del juego
 function startGame() {
-    playerName = document.getElementById('playerName').value;
+    playerName = playerNameInput.value.trim();
     if (playerName.length < 3) {
-        alert('El nombre del jugador debe tener al menos 3 letras.');
+        showMessage('El nombre del jugador debe tener al menos 3 letras.', 'error');
         return;
     }
     
-    // Ocultar la sección de entrada del nombre del jugador
-    document.getElementById('playerInfo').classList.add('hidden');
-
-   // Ocultar el selector de tiempo y mostrar el temporizador
-   document.getElementById('timerSelector').style.display = 'none';
-   document.getElementById('timerDisplay').style.display = 'block';
-    
-      // Mostrar los elementos del juego
-      var hiddenElements = document.querySelectorAll('.hidden');
-      hiddenElements.forEach(function(element) {
-          element.classList.remove('hidden');
-      });
-  
-      document.getElementById('clearWord').classList.remove('hidden');
+    hideElement(document.getElementById('playerInfo'));
+    hideElement(document.getElementById('gameInstructions'));
+    hideElement(document.getElementById('timerSelector'));
+    showElement(gameBoardElement);
+    showElement(document.getElementById('wordInfo'));
+    showElement(document.getElementById('scoreInfo'));
+    showElement(timerDisplay);
+    showElement(reshuffleButton);
+    showElement(document.getElementById('wordList'));
     
     generateBoard();
     startTimer();
     enableBoardInteraction();
+    showMessage('¡Juego iniciado! Buena suerte, ' + playerName + '!', 'success');
 }
 
+// Generación del tablero
 function generateBoard() {
     gameBoard = [];
-    var boardElement = document.getElementById('gameBoard');
-    boardElement.innerHTML = '';
+    gameBoardElement.innerHTML = '';
     
-    // Seleccionar una palabra aleatoria de 4 letras
-    var selectedWord = validFourLetterWords[Math.floor(Math.random() * validFourLetterWords.length)];
+    const selectedWord = validFourLetterWords[Math.floor(Math.random() * validFourLetterWords.length)];
+    const isHorizontal = Math.random() < 0.5;
+    const startRow = isHorizontal ? Math.floor(Math.random() * 4) : 0;
+    const startCol = isHorizontal ? 0 : Math.floor(Math.random() * 4);
     
-    // Determinar una posición aleatoria para la palabra (horizontal o vertical)
-    var isHorizontal = Math.random() < 0.5;
-    var startRow = isHorizontal ? Math.floor(Math.random() * 4) : 0;
-    var startCol = isHorizontal ? 0 : Math.floor(Math.random() * 4);
-    
-    // Llenar el tablero con letras aleatorias
-    var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    for (var i = 0; i < 16; i++) {
-        var row = Math.floor(i / 4);
-        var col = i % 4;
-        var letter;
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (let i = 0; i < 16; i++) {
+        const row = Math.floor(i / 4);
+        const col = i % 4;
+        let letter;
         
-        // Colocar la palabra seleccionada
         if (isHorizontal && row === startRow && col >= startCol && col < startCol + 4) {
             letter = selectedWord[col - startCol];
         } else if (!isHorizontal && col === startCol && row >= startRow && row < startRow + 4) {
@@ -127,93 +93,178 @@ function generateBoard() {
         
         gameBoard.push(letter);
         
-        var letterElement = document.createElement('div');
+        const letterElement = document.createElement('div');
         letterElement.className = 'letter';
         letterElement.textContent = letter;
         letterElement.dataset.index = i;
-        boardElement.appendChild(letterElement);
+        gameBoardElement.appendChild(letterElement);
     }
-    
 }
 
+// Habilitar interacción con el tablero
 function enableBoardInteraction() {
-    var letters = document.getElementsByClassName('letter');
-    for (var i = 0; i < letters.length; i++) {
-        letters[i].addEventListener('click', selectLetter);
+    const letters = document.getElementsByClassName('letter');
+    for (let letter of letters) {
+        letter.addEventListener('click', selectLetter);
     }
-    
-    var submitButton = document.getElementById('submitWord');
-    submitButton.addEventListener('click', async function() {
-        await submitWord();
-    });
-
-    var clearButton = document.getElementById('clearWord');
-    clearButton.addEventListener('click', clearCurrentWord);
 }
 
+// Selección de letra
 function selectLetter() {
-    this.classList.add('selected');
-    currentWord += this.textContent;
-    document.getElementById('currentWord').textContent = currentWord;
+    if (!this.classList.contains('selected')) {
+        this.classList.add('selected');
+        currentWord += this.textContent;
+        updateCurrentWordDisplay();
+    }
 }
 
+// Actualizar visualización de la palabra actual
+function updateCurrentWordDisplay() {
+    currentWordElement.textContent = currentWord;
+}
+
+// Envío de palabra
 async function submitWord() {
     if (currentWord.length < 3) {
-        resetCurrentWord();
+        showMessage('La palabra debe tener al menos 3 letras.', 'error');
         return;
     }
     
     const isValid = await isValidWord(currentWord);
     
     if (isValid) {
-        var wordScore = calculateScore(currentWord);
+        const wordScore = calculateScore(currentWord);
         score += wordScore;
-        document.getElementById('score').textContent = score;
+        updateScoreDisplay();
         
-        var wordList = document.getElementById('foundWords');
-        var wordItem = document.createElement('li');
+        const wordItem = document.createElement('li');
         wordItem.textContent = currentWord + ' (' + wordScore + ' puntos)';
-        wordList.appendChild(wordItem);
+        foundWordsElement.appendChild(wordItem);
+        
+        showMessage('Palabra válida: ' + currentWord + '. Has ganado ' + wordScore + ' puntos.', 'success');
     } else {
-        alert('Palabra inválida. Pierdes 1 punto.');
-        score = Math.max(0, score - 1);
-        document.getElementById('score').textContent = score;
+        showMessage('Palabra inválida: ' + currentWord + '. Inténtalo de nuevo.', 'error');
     }
     
-    resetCurrentWord();
+    clearCurrentWord();
 }
 
-function resetCurrentWord() {
+// Limpiar palabra actual
+function clearCurrentWord() {
     currentWord = '';
-    document.getElementById('currentWord').textContent = '';
-    var selectedLetters = document.getElementsByClassName('selected');
+    updateCurrentWordDisplay();
+    const selectedLetters = document.getElementsByClassName('selected');
     while (selectedLetters.length > 0) {
         selectedLetters[0].classList.remove('selected');
     }
 }
 
-function startTimer() {
-    var timeLeft = parseInt(document.getElementById('gameTime').value);
-    var timerElement = document.getElementById('time');
+// Validación de palabra
+async function isValidWord(word) {
+    word = word.toUpperCase();
     
-    // Limpiar el temporizador existente si lo hay
-    if (timer) {
-        clearInterval(timer);
+    if (word.length < 3) return false;
+    
+    if (!canFormWordOnBoard(word)) return false;
+    
+    const foundWords = foundWordsElement.getElementsByTagName('li');
+    for (let item of foundWords) {
+        if (item.textContent.toUpperCase().startsWith(word)) return false;
     }
+    
+    return await checkWordInDictionary(word);
+}
+
+// Verificar si la palabra se puede formar en el tablero
+function canFormWordOnBoard(word) {
+    for (let i = 0; i < gameBoard.length; i++) {
+        if (canFormWordFromCell(word, i, [])) return true;
+    }
+    return false;
+}
+
+function canFormWordFromCell(word, cellIndex, usedCells) {
+    if (word.length === 0) return true;
+    
+    if (cellIndex < 0 || cellIndex >= gameBoard.length || usedCells.includes(cellIndex)) return false;
+    
+    if (gameBoard[cellIndex] !== word[0]) return false;
+    
+    const newUsedCells = [...usedCells, cellIndex];
+    const remainingWord = word.slice(1);
+    
+    const adjacentCells = getAdjacentCells(cellIndex);
+    for (let adjacent of adjacentCells) {
+        if (canFormWordFromCell(remainingWord, adjacent, newUsedCells)) return true;
+    }
+    
+    return false;
+}
+
+function getAdjacentCells(cellIndex) {
+    const row = Math.floor(cellIndex / 4);
+    const col = cellIndex % 4;
+    const adjacent = [];
+    
+    for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+            if (i === 0 && j === 0) continue;
+            const newRow = row + i;
+            const newCol = col + j;
+            if (newRow >= 0 && newRow < 4 && newCol >= 0 && newCol < 4) {
+                adjacent.push(newRow * 4 + newCol);
+            }
+        }
+    }
+    
+    return adjacent;
+}
+
+// Verificar palabra en el diccionario (API)
+async function checkWordInDictionary(word) {
+    word = word.toLowerCase();
+    
+    if (word in wordCache) return wordCache[word];
+
+    try {
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        const isValid = response.ok;
+        wordCache[word] = isValid;
+        return isValid;
+    } catch (error) {
+        console.error('Error al verificar la palabra:', error);
+        return false;
+    }
+}
+
+// Calcular puntuación de la palabra
+function calculateScore(word) {
+    const length = word.length;
+    if (length <= 4) return 1;
+    if (length === 5) return 2;
+    if (length === 6) return 3;
+    if (length === 7) return 5;
+    return 11; // 8 letras o más
+}
+
+// Actualizar visualización de la puntuación
+function updateScoreDisplay() {
+    scoreElement.textContent = score;
+}
+
+// Iniciar temporizador
+function startTimer() {
+    let timeLeft = parseInt(timerSelector.value);
     
     function updateTimerDisplay() {
-        var minutes = Math.floor(timeLeft / 60);
-        var seconds = timeLeft % 60;
-        
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-        
-        timerElement.textContent = minutes + ":" + seconds;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
     
-    updateTimerDisplay(); // Actualizar inmediatamente para mostrar el tiempo inicial
+    updateTimerDisplay();
     
-    timer = setInterval(function() {
+    timer = setInterval(() => {
         timeLeft--;
         updateTimerDisplay();
         
@@ -224,191 +275,48 @@ function startTimer() {
     }, 1000);
 }
 
+// Finalizar juego
 function endGame() {
-    alert('¡Tiempo terminado! Tu puntuación final es: ' + score);
+    disableBoardInteraction();
+    showMessage(`¡Tiempo terminado! Tu puntuación final es: ${score}`, 'info');
+    showElement(document.getElementById('playerInfo'));
+    hideElement(gameBoardElement);
+    hideElement(document.getElementById('wordInfo'));
+    hideElement(document.getElementById('scoreInfo'));
+    hideElement(timerDisplay);
+    hideElement(reshuffleButton);
 }
 
-window.addEventListener('load', initializeGame);
-
-function endGame() {
-    var selectedTime = parseInt(document.getElementById('gameTime').value);
-    var timePlayed = selectedTime - parseInt(document.getElementById('time').textContent.split(':')[0]) * 60 - parseInt(document.getElementById('time').textContent.split(':')[1]);
-    var minutes = Math.floor(timePlayed / 60);
-    var seconds = timePlayed % 60;
-    
-    alert('¡Tiempo terminado! Tu puntuación final es: ' + score + '\nTiempo jugado: ' + minutes + ' minutos y ' + seconds + ' segundos');
-    
-    saveScore();
-    showHighScores();
-    resetGame();
-}
-
-function saveScore() {
-    var gameResult = {
-        playerName: playerName,
-        score: score,
-        date: new Date().toISOString()
-    };
-    
-    var highScores = JSON.parse(localStorage.getItem('boogleHighScores')) || [];
-    highScores.push(gameResult);
-    highScores.sort(function(a, b) { return b.score - a.score; });
-    highScores = highScores.slice(0, 10); // Mantener solo los 10 mejores puntajes
-    
-    localStorage.setItem('boogleHighScores', JSON.stringify(highScores));
-}
-
-function showHighScores() {
-    var highScores = JSON.parse(localStorage.getItem('boogleHighScores')) || [];
-    var scoreList = 'Mejores puntuaciones:\n\n';
-    
-    for (var i = 0; i < highScores.length; i++) {
-        scoreList += (i + 1) + '. ' + highScores[i].playerName + ': ' + highScores[i].score + ' puntos\n';
-    }
-    
-    alert(scoreList);
-}
-
-function resetGame() {
-    score = 0;
-    document.getElementById('score').textContent = score;
-    document.getElementById('foundWords').innerHTML = '';
-    document.getElementById('playerName').value = '';
-    document.getElementById('currentWord').textContent = '';
-    
-    // Mostrar el selector de tiempo y ocultar el temporizador
-    document.getElementById('timerSelector').style.display = 'block';
-    document.getElementById('timerDisplay').style.display = 'none';
-    
-    var gameBoard = document.getElementById('gameBoard');
-    gameBoard.innerHTML = '';
-    
-    var startButton = document.getElementById('startGame');
-    startButton.disabled = false;
-    
-    // Reiniciar el temporizador
-    if (timer) {
-        clearInterval(timer);
-    }
-    document.getElementById('time').textContent = '00:00';
-}
-
-async function isValidWord(word) {
-    word = word.toUpperCase();
-    
-    if (word.length < 3) {
-        return false;
-    }
-    
-    const canForm = canFormWordOnBoard(word);
-    if (!canForm) {
-        return false;
-    }
-    
-    var foundWords = document.getElementById('foundWords').getElementsByTagName('li');
-    for (var i = 0; i < foundWords.length; i++) {
-        if (foundWords[i].textContent.toUpperCase().startsWith(word)) {
-            return false;
-        }
-    }
-    
-    // Verificar la palabra en el diccionario (usando caché si está disponible)
-    const isInDictionary = await checkWordInDictionary(word);
-    return isInDictionary;
-}
-
-function canFormWordOnBoard(word) {
-    for (var i = 0; i < gameBoard.length; i++) {
-        if (canFormWordFromCell(word, i, [])) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function canFormWordFromCell(word, cellIndex, usedCells) {
-    if (word.length === 0) {
-        return true;
-    }
-    
-    if (cellIndex < 0 || cellIndex >= gameBoard.length || usedCells.indexOf(cellIndex) !== -1) {
-        return false;
-    }
-    
-    if (gameBoard[cellIndex] !== word[0]) {
-        return false;
-    }
-    
-    var newUsedCells = usedCells.concat([cellIndex]);
-    var remainingWord = word.slice(1);
-    
-    var adjacentCells = getAdjacentCells(cellIndex);
-    for (var i = 0; i < adjacentCells.length; i++) {
-        if (canFormWordFromCell(remainingWord, adjacentCells[i], newUsedCells)) {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-function getAdjacentCells(cellIndex) {
-    var row = Math.floor(cellIndex / 4);
-    var col = cellIndex % 4;
-    var adjacent = [];
-    
-    for (var i = -1; i <= 1; i++) {
-        for (var j = -1; j <= 1; j++) {
-            if (i === 0 && j === 0) continue;
-            var newRow = row + i;
-            var newCol = col + j;
-            if (newRow >= 0 && newRow < 4 && newCol >= 0 && newCol < 4) {
-                adjacent.push(newRow * 4 + newCol);
-            }
-        }
-    }
-    
-    return adjacent;
-}
-function calculateScore(word) {
-    var length = word.length;
-    if (length <= 4) return 1;
-    if (length === 5) return 2;
-    if (length === 6) return 3;
-    if (length === 7) return 5;
-    return 11; // 8 letras o más
-}
-
+// Reordenar tablero
 function reshuffleBoard() {
-    // Generar un nuevo tablero
     generateBoard();
-    
-    // Limpiar la palabra actual
-    resetCurrentWord();
-    
-    // Volver a habilitar la interacción con el tablero
+    clearCurrentWord();
     enableBoardInteraction();
-    
+    showMessage('Tablero reordenado. ¡Buena suerte!', 'info');
 }
 
-async function checkWordInDictionary(word) {
-    word = word.toLowerCase();
-    
-    // Verificar si la palabra está en el caché
-    if (word in wordCache) {
-        return wordCache[word];
-    }
+// Funciones auxiliares
+function showMessage(text, type) {
+    messageElement.textContent = text;
+    messageElement.className = type;
+    showElement(messageElement);
+    setTimeout(() => hideElement(messageElement), 3000);
+}
 
-    try {
-        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-        const isValid = response.ok;
-        
-        // Almacenar el resultado en el caché
-        wordCache[word] = isValid;
-        
-        return isValid;
-    } catch (error) {
-        console.error('Error al verificar la palabra:', error);
-        return false;
+function showElement(element) {
+    element.classList.remove('hidden');
+}
+
+function hideElement(element) {
+    element.classList.add('hidden');
+}
+
+function disableBoardInteraction() {
+    const letters = document.getElementsByClassName('letter');
+    for (let letter of letters) {
+        letter.removeEventListener('click', selectLetter);
     }
 }
+
+// Inicializar el juego cuando se carga la página
+window.addEventListener('load', initializeGame);
