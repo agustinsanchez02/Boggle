@@ -27,9 +27,8 @@ window.onload = function() {
 };
 
 // Función para mostrar errores
-function showError(element, message) {
-    element.textContent = message;
-    element.style.display = 'block';
+function showErrors(message) {
+    showMessage(message, 'error');
 }
 
 // Función para limpiar errores
@@ -43,16 +42,16 @@ function checkName() {
     var name = nameInput.value.trim();
     clearError(nameError);
     if (name === '') {
-        showError(nameError, 'El campo del Nombre no puede estar vacío.');
+        showErrors(nameError, 'El campo del Nombre no puede estar vacío.');
         return false;
     }
     var regex = /^[a-zA-Z\s]{6,}$/;
     if (!regex.test(name)) {
-        showError(nameError, 'El campo del Nombre debe tener al menos 6 caracteres sin números.');
+        showErrors(nameError, 'El campo del Nombre debe tener al menos 6 caracteres sin números.');
         return false;
     }
     if (name.indexOf(' ') === -1) {
-        showError(nameError, 'El campo del Nombre debe tener al menos un espacio.');
+        showErrors(nameError, 'El campo del Nombre debe tener al menos un espacio.');
         return false;
     }
     return true;
@@ -63,12 +62,12 @@ function checkEmail() {
     var email = emailInput.value.trim();
     clearError(emailError);
     if (email === '') {
-        showError(emailError, 'El campo del Email no puede estar vacío.');
+        showErrors(emailError, 'El campo del Email no puede estar vacío.');
         return false;
     }
     var regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     if (!regex.test(email)) {
-        showError(emailError, 'El campo del Email no tiene un formato válido.');
+        showErrors(emailError, 'El campo del Email no tiene un formato válido.');
         return false;
     }
     return true;
@@ -79,11 +78,11 @@ function checkMessage() {
     var message = messageInput.value.trim();
     clearError(messageError);
     if (message === '') {
-        showError(messageError, 'El campo del Mensaje no puede estar vacío.');
+        showErrors(messageError, 'El campo del Mensaje no puede estar vacío.');
         return false;
     }
     if (message.length < 5) {
-        showError(messageError, 'El campo del Mensaje debe tener al menos 5 caracteres.');
+        showErrors(messageError, 'El campo del Mensaje debe tener al menos 5 caracteres.');
         return false;
     }
     return true;

@@ -66,18 +66,25 @@ nav ul li a:hover {
 
 .letter {
     aspect-ratio: 1;
-    border: 2px solid var(--primary-color);
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 24px;
+    font-weight: bold;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    cursor: default;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.letter.selectable {
     cursor: pointer;
-    background-color: var(--board-color);
-    transition: background-color 0.3s ease;
+    opacity: 1;
 }
 
 .letter.selected {
-    background-color: var(--secondary-color);
+    background-color: #4a90e2;
     color: white;
 }
 
@@ -191,17 +198,25 @@ footer p::after {
     color: #4a90e2;
 }
 
-.error {
-    color: red;
-    font-size: 0.8em;
-    margin-top: 5px;
-    display: none;
+#message {
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-weight: bold;
+    text-align: center;
 }
 
-.success-message {
-    color: green;
-    font-size: 1em;
-    margin-top: 10px;
+#message.error {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+#message.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.hidden {
     display: none;
 }
 

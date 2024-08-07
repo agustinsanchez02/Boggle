@@ -1,6 +1,7 @@
 'use strict';
 
 // Variables globales
+let lastSelectedIndex = -1;
 let gameBoard = [];
 let currentWord = '';
 let score = 0;
@@ -47,7 +48,7 @@ function initializeGame() {
 function startGame() {
     playerName = playerNameInput.value.trim();
     if (playerName.length < 3) {
-        showMessage('El nombre del jugador debe tener al menos 3 letras.', 'error');
+        showError('El nombre del jugador debe tener al menos 3 letras.', 'error');
         return;
     }
     
@@ -106,27 +107,60 @@ function enableBoardInteraction() {
     const letters = document.getElementsByClassName('letter');
     for (let letter of letters) {
         letter.addEventListener('click', selectLetter);
+        letter.classList.add('selectable');
     }
 }
 
 // Selección de letra
 function selectLetter() {
-    if (!this.classList.contains('selected')) {
+    const index = parseInt(this.dataset.index);
+    if (isValidSelection(index)) {
         this.classList.add('selected');
+        this.classList.remove('selectable');
         currentWord += this.textContent;
         updateCurrentWordDisplay();
+        lastSelectedIndex = index;
+        updateSelectableLetters();
     }
 }
 
+function updateSelectableLetters() {
+    const letters = document.getElementsByClassName('letter');
+    for (let letter of letters) {
+        letter.classList.remove('selectable');
+    }
+    if (lastSelectedIndex !== -1) {
+        const selectableCells = getAdjacentCells(lastSelectedIndex);
+        for (let index of selectableCells) {
+            if (!letters[index].classList.contains('selected')) {
+                letters[index].classList.add('selectable');
+            }
+        }
+    }
+}
+
+
+function isValidSelection(index) {
+    if (lastSelectedIndex === -1) return true;
+    return getAdjacentCells(lastSelectedIndex).includes(index);
+}
 // Actualizar visualización de la palabra actual
 function updateCurrentWordDisplay() {
     currentWordElement.textContent = currentWord;
 }
 
+
 // Envío de palabra
 async function submitWord() {
     if (currentWord.length < 3) {
-        showMessage('La palabra debe tener al menos 3 letras.', 'error');
+        showError('La palabra debe tener al menos 3 letras.');
+        return;
+    }
+    
+    if (isWordRepeated(currentWord)) {
+        showError('Esta palabra ya ha sido encontrada. Pierdes 1 punto.');
+        updateScore(-1);
+        clearCurrentWord();
         return;
     }
     
@@ -134,30 +168,73 @@ async function submitWord() {
     
     if (isValid) {
         const wordScore = calculateScore(currentWord);
-        score += wordScore;
-        updateScoreDisplay();
+        updateScore(wordScore);
         
         const wordItem = document.createElement('li');
         wordItem.textContent = currentWord + ' (' + wordScore + ' puntos)';
         foundWordsElement.appendChild(wordItem);
         
-        showMessage('Palabra válida: ' + currentWord + '. Has ganado ' + wordScore + ' puntos.', 'success');
+        showSuccess('¡Palabra correcta! Has ganado ' + wordScore + ' puntos.');
     } else {
-        showMessage('Palabra inválida: ' + currentWord + '. Inténtalo de nuevo.', 'error');
+         showError('Palabra incorrecta. Pierdes 1 punto.');
+        updateScore(-1);
     }
     
     clearCurrentWord();
+}
+
+function showError(message) {
+    showMessage(message, 'error');
+}
+
+// Función para mostrar un mensaje de éxito
+function showSuccess(message) {
+    showMessage(message, 'success');
+}
+
+// Función para mostrar un mensaje
+function showMessage(text, type) {
+    const messageElement = document.getElementById('message');
+    messageElement.textContent = text;
+    messageElement.className = type;
+    messageElement.classList.remove('hidden');
+    
+    // Ocultar el mensaje después de 3 segundos
+    setTimeout(() => {
+        messageElement.classList.add('hidden');
+    }, 3000);
+}
+
+// Función para actualizar la puntuación
+function updateScore(points) {
+    score += points;
+    score = Math.max(0, score); // Evita que la puntuación sea negativa
+    updateScoreDisplay();
+}
+
+// Función para verificar si una palabra ya ha sido encontrada
+function isWordRepeated(word) {
+    const foundWords = foundWordsElement.getElementsByTagName('li');
+    for (let item of foundWords) {
+        if (item.textContent.toUpperCase().startsWith(word.toUpperCase())) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Limpiar palabra actual
 function clearCurrentWord() {
     currentWord = '';
     updateCurrentWordDisplay();
-    const selectedLetters = document.getElementsByClassName('selected');
-    while (selectedLetters.length > 0) {
-        selectedLetters[0].classList.remove('selected');
+    const letters = document.getElementsByClassName('letter');
+    for (let letter of letters) {
+        letter.classList.remove('selected');
+        letter.classList.add('selectable');
     }
+    lastSelectedIndex = -1;
 }
+
 
 // Validación de palabra
 async function isValidWord(word) {
@@ -232,7 +309,6 @@ async function checkWordInDictionary(word) {
         wordCache[word] = isValid;
         return isValid;
     } catch (error) {
-        console.error('Error al verificar la palabra:', error);
         return false;
     }
 }
@@ -296,13 +372,6 @@ function reshuffleBoard() {
 }
 
 // Funciones auxiliares
-function showMessage(text, type) {
-    messageElement.textContent = text;
-    messageElement.className = type;
-    showElement(messageElement);
-    setTimeout(() => hideElement(messageElement), 3000);
-}
-
 function showElement(element) {
     element.classList.remove('hidden');
 }
